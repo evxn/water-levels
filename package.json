@@ -1,0 +1,15 @@
+{
+    "name": "water-levels",
+    "version": "1.0.0",
+    "description": "",
+    "main": "dist/main.js",
+    "scripts": {
+        "start": "npx tsc -p tsconfig.json -w",
+        "build": "npx tsc -p tsconfig.json"
+    },
+    "author": "evxn",
+    "license": "MIT",
+    "devDependencies": {
+        "typescript": "^4.1.3"
+    }
+}
