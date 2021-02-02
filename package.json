@@ -4,13 +4,17 @@
     "description": "",
     "main": "dist/main.js",
     "scripts": {
+        "serve": "npx http-server -p 3333 dist",
         "start": "npx tsc -p tsconfig.json -w",
-        "build": "npx tsc -p tsconfig.json"
+        "build": "npx tsc -p tsconfig.json",
+        "buildWebsite": "NODE_ENV=production npx tailwindcss-cli build -o ./dist/tailwind.css && npm run build && cp src/index.html dist"
     },
     "author": "evxn",
     "license": "MIT",
     "devDependencies": {
+        "http-server": "^0.12.3",
         "prettier": "^2.2.1",
+        "tailwindcss-cli": "^0.1.2",
         "typescript": "^4.1.3"
     }
 }
