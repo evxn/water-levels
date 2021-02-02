@@ -71,8 +71,8 @@ function submitHandler(event, form, result) {
         return;
     }
     const { levels, waterLevels } = calculateWaterLevels(hours, landscape);
-    result.textContent = `levels:\n\t[${stringifyResult(levels)}]\n`;
-    result.textContent += `waterLevels:\n\t[${stringifyResult(waterLevels)}]`;
+    result.textContent = `levels\n\t${stringifyResult(levels)}\n\n`;
+    result.textContent += `waterLevels\n\t${stringifyResult(waterLevels)}`;
 }
 function stringifyResult(levels) {
     return levels
