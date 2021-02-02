@@ -545,6 +545,7 @@ function setAt<T>(index: number, elem: T, array: T[]): T[] {
 		? array
 		: [...array.slice(0, index), elem, ...array.slice(index + 1)];
 }
+
 function removeAt<T>(index: number, array: T[]): T[] {
 	return [...array.slice(0, index), ...array.slice(index + 1)];
 }
