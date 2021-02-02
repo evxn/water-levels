@@ -20,10 +20,95 @@ class GraphNode {
 }
 
 (function main() {
-	const landscape = [3, 1, 6, 4, 8, 9];
+	if (typeof window === 'undefined') {
+		// we're in NodeJs
+		console.log(calculateWaterLevels(1, [3, 1, 6, 4, 8, 9]));
+		return;
+	}
+	// browser code
+	window.onload = () => {
+		const form = window.document.querySelector('form');
+		if (!form) {
+			throw new Error('Cannot the form element on the page');
+		}
 
-	console.log(calculateWaterLevels(3, landscape));
+		const result = window.document.querySelector('#result');
+		if (!result) {
+			throw new Error('Cannot the #result element on the page');
+		}
+
+		const random = window.document.querySelector('#random') as HTMLButtonElement | null;
+		if (!random) {
+			throw new Error('Cannot the #random button');
+		}
+
+		form.onsubmit = (event) => submitHandler(event, form, result);
+		random.onclick = () => randomClickHandler(form, result);
+	};
 })();
+
+function randomClickHandler(form: HTMLFormElement, result: Element) {
+	const input = form.querySelector('#landscape') as HTMLInputElement | null;
+	if (!input) {
+		throw new Error('Cannot the #landscape input');
+	}
+
+	const length = randomIntFromInterval(4, 8);
+
+	input.value = stringifyResult(
+		Array(length)
+			.fill(0)
+			.map((_) => randomIntFromInterval(1, 10))
+	);
+	result.textContent = '';
+}
+
+function submitHandler(event: Event, form: HTMLFormElement, result: Element) {
+	event.preventDefault();
+
+	const formData = new FormData(form);
+	const landscapeRaw = String(formData.get('landscape'));
+	const landscape = parseLandscapeData(landscapeRaw);
+
+	if (landscape.some(isNaN)) {
+		const error = `Cannot parse landscape data:  ${JSON.stringify(landscapeRaw)}`;
+		console.error(error);
+		result.textContent = `error:\n\t${error}`;
+		return;
+	}
+
+	const hoursRaw = String(formData.get('hours'));
+	const hours = parseInt(hoursRaw, 10);
+
+	if (isNaN(hours)) {
+		const error = `Cannot parse hours data: ${JSON.stringify(hoursRaw)}`;
+		console.error(error);
+		result.textContent = `error:\n\t${error}`;
+		return;
+	}
+
+	const { levels, waterLevels } = calculateWaterLevels(hours, landscape);
+
+	result.textContent = `levels:\n\t[${stringifyResult(levels)}]\n`;
+	result.textContent += `waterLevels:\n\t[${stringifyResult(waterLevels)}]`;
+}
+
+function stringifyResult(levels: number[]): string {
+	return levels
+		.map((x) =>
+			Math.floor(x) === x
+				? x.toString()
+				: x.toLocaleString('en-US', { maximumFractionDigits: 3, minimumFractionDigits: 1 })
+		)
+		.reduce((a, b) => `${a}, ${b}`);
+}
+
+function parseLandscapeData(str: string): number[] {
+	return str
+		.split(',')
+		.map((token) => token.trim())
+		.map(parseFloat);
+}
 
 function calculateWaterLevels(
 	hours: number,
@@ -466,4 +551,8 @@ function removeAt<T>(index: number, array: T[]): T[] {
 
 function sortedNonEmptyArrayIncludes(elem: number, array: number[]): boolean {
 	return elem >= head(array)! && elem < head(array)! + array.length;
+}
+
+function randomIntFromInterval(min: number, max: number): number {
+	return Math.floor(Math.random() * (max - min + 1) + min);
 }
