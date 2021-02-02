@@ -16,12 +16,10 @@ class GraphNode {
 		public waterVolume: number = 0,
 		public excessiveWaterVolume: number = 0,
 		public baseLevel: number = 0
-	) {
-		this.segmentIndexes = [...segmentIndexes].sort((a, b) => a - b);
-	}
+	) {}
 }
 
-const landscape = Array(100)
+const landscape = Array(10000)
 	.fill(1)
 	.map((_, i) => i);
 
@@ -30,7 +28,9 @@ graph = mergeSameLevelNeighbors(graph);
 graph = processGraph(graph);
 
 console.log(
-	landscape.map((_, index) => graph.find((node) => node.segmentIndexes.includes(index))?.level)
+	landscape
+		.map((_, index) => graph.find((node) => node.segmentIndexes.includes(index))?.level)
+		.slice(0, 100)
 );
 
 function createGraph(hours: number, landscape: number[]): GraphNode[] {
@@ -222,8 +222,10 @@ function mergeSameLevelNeighbors(nodes: GraphNode[]): GraphNode[] {
 }
 
 function mergeNodes(node: GraphNode, otherNode: GraphNode): GraphNode {
+	const segmentIndexes = node.segmentIndexes.concat(otherNode.segmentIndexes);
+
 	return new GraphNode(
-		node.segmentIndexes.concat(otherNode.segmentIndexes),
+		[...new Int32Array(segmentIndexes).sort()],
 		0,
 		node.excessiveWaterVolume + otherNode.excessiveWaterVolume,
 		node.level
