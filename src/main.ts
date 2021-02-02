@@ -19,19 +19,32 @@ class GraphNode {
 	) {}
 }
 
-const landscape = Array(10000)
-	.fill(1)
-	.map((_, i) => i);
+(function main() {
+	const landscape = [3, 1, 6, 4, 8, 9];
 
-let graph = createGraph(1, landscape);
-graph = mergeSameLevelNeighbors(graph);
-graph = processGraph(graph);
+	console.log(calculateWaterLevels(3, landscape));
+})();
 
-console.log(
-	landscape
-		.map((_, index) => graph.find((node) => node.segmentIndexes.includes(index))?.level)
-		.slice(0, 100)
-);
+function calculateWaterLevels(
+	hours: number,
+	landscape: number[]
+): {
+	waterLevels: number[];
+	levels: number[];
+} {
+	let graph = createGraph(hours, landscape);
+	graph = mergeSameLevelNeighbors(graph);
+	graph = processGraph(graph);
+
+	const levels = landscape.map(
+		(_, index) =>
+			graph.find((node) => sortedNonEmptyArrayIncludes(index, node.segmentIndexes))!.level
+	);
+
+	const waterLevels = landscape.map((height, index) => levels[index] - height);
+
+	return { levels, waterLevels };
+}
 
 function createGraph(hours: number, landscape: number[]): GraphNode[] {
 	const leftWall = new GraphNode([-1], 0, -Infinity, Infinity);
@@ -53,60 +66,62 @@ function processGraph(nodes: GraphNode[]): GraphNode[] {
 	let current = head(nodes);
 	let rest = tail(nodes) ?? [];
 	while (current && excessiveWaterTotal > 0) {
-		let prevNode = prev(current, nodes);
-		let nextNode = next(current, nodes);
+		let [prevNode, prevIndex] = prev(current, nodes);
+		let [nextNode, nextIndex] = next(current, nodes);
 
 		if (prevNode && nextNode) {
 			const currentIndex = nodes.indexOf(current);
-			const prevIndex = nodes.indexOf(prevNode);
-			const nextIndex = nodes.indexOf(nextNode);
-			const excessiveWaterVolume = current.excessiveWaterVolume;
 
-			if (excessiveWaterVolume > 0) {
-				if (current.level > prevNode.level && current.level > nextNode.level) {
-					/* case hill */
-					[current, prevNode] = flowWater(0.5 * excessiveWaterVolume, current, prevNode);
-					[current, nextNode] = flowWater(0.5 * excessiveWaterVolume, current, nextNode);
-
-					nodes = setAt(prevIndex, prevNode, nodes);
-					nodes = setAt(nextIndex, nextNode, nodes);
-					nodes = setAt(currentIndex, current, nodes);
-					rest = nodes.slice(currentIndex + 1);
-				} else if (current.level > prevNode.level) {
-					/* case slope */
-					[current, prevNode] = flowWater(excessiveWaterVolume, current, prevNode);
-
-					nodes = setAt(currentIndex, current, nodes);
-					nodes = setAt(prevIndex, prevNode, nodes);
-					rest = nodes.slice(currentIndex + 1);
-				} else if (current.level > nextNode.level) {
-					/* case slope */
-					[current, nextNode] = flowWater(excessiveWaterVolume, current, nextNode);
-
-					nodes = setAt(currentIndex, current, nodes);
-					nodes = setAt(nextIndex, nextNode, nodes);
-					rest = nodes.slice(currentIndex + 1);
-				} else {
-					/* case pit */
-					const delta = calculateWaterVolumeDelta(current, nodes);
-
-					excessiveWaterTotal -= delta;
-					current = fillPitWithWater(delta, current);
-
-					nodes = setAt(currentIndex, current, nodes);
-					rest = nodes.slice(currentIndex + 1);
-				}
+			if (current.level > prevNode.level && current.level > nextNode.level) {
+				/* case hill */
+				({ current, rest, nodes, prevNode, nextNode } = updateHill({
+					prevNode,
+					prevIndex,
+					nextNode,
+					nextIndex,
+					current,
+					currentIndex,
+					nodes,
+				}));
+			} else if (current.level > prevNode.level) {
+				/* case slope left */
+				({ current, rest, nodes, prevNode } = updateSlopeLeft({
+					prevNode,
+					prevIndex,
+					current,
+					currentIndex,
+					nodes,
+				}));
+			} else if (current.level > nextNode.level) {
+				/* case slope right */
+				({ current, rest, nodes, nextNode } = updateSlopeRight({
+					nextNode,
+					nextIndex,
+					current,
+					currentIndex,
+					nodes,
+				}));
+			} else if (current.level < prevNode.level && current.level < nextNode.level) {
+				/* case pit */
+				({ current, rest, nodes, excessiveWaterTotal } = updatePit({
+					excessiveWaterTotal,
+					current,
+					currentIndex,
+					nodes,
+				}));
 			}
 
 			if (current.level === prevNode.level || current.level === nextNode.level) {
 				/* case same level */
-				const neighbor = current.level === prevNode.level ? prevNode : nextNode;
-
-				current = mergeNodes(current, neighbor);
-
-				nodes = setAt(currentIndex, current, nodes);
-				nodes = removeAt(neighbor === prevNode ? prevIndex : nextIndex, nodes);
-				rest = nodes.slice(currentIndex + 1);
+				({ current, rest, nodes } = updateSameLevel({
+					prevNode,
+					prevIndex,
+					nextNode,
+					nextIndex,
+					current,
+					currentIndex,
+					nodes,
+				}));
 
 				continue; // try to greedy merge more neighbors
 			}
@@ -121,31 +136,33 @@ function processGraph(nodes: GraphNode[]): GraphNode[] {
 	current = head(nodes);
 	rest = tail(nodes) ?? [];
 	while (current && excessiveWaterTotal > 0) {
-		const prevNode = prev(current, nodes);
-		const nextNode = next(current, nodes);
+		const [prevNode, prevIndex] = prev(current, nodes);
+		const [nextNode, nextIndex] = next(current, nodes);
 
 		if (prevNode && nextNode) {
 			const currentIndex = nodes.indexOf(current);
 
-			if (current.excessiveWaterVolume > 0) {
-				const delta = calculateWaterVolumeDelta(current, nodes);
-
-				excessiveWaterTotal -= delta;
-				current = fillPitWithWater(delta, current);
-
-				nodes = setAt(currentIndex, current, nodes);
-				rest = nodes.slice(currentIndex + 1);
+			if (current.level < prevNode.level && current.level < nextNode.level) {
+				/* case pit */
+				({ current, rest, nodes, excessiveWaterTotal } = updatePit({
+					excessiveWaterTotal,
+					current,
+					currentIndex,
+					nodes,
+				}));
 			}
 
 			if (current.level === prevNode.level || current.level === nextNode.level) {
 				/* case same level */
-				const neighbor = current.level === prevNode.level ? prevNode : nextNode;
-
-				current = mergeNodes(current, neighbor);
-
-				nodes = setAt(currentIndex, current, nodes);
-				nodes = removeAt(nodes.indexOf(neighbor), nodes);
-				rest = nodes.slice(currentIndex + 1);
+				({ current, rest, nodes } = updateSameLevel({
+					prevNode,
+					prevIndex,
+					nextNode,
+					nextIndex,
+					current,
+					currentIndex,
+					nodes,
+				}));
 
 				continue; // try to greedy merge more neighbors
 			}
@@ -159,31 +176,185 @@ function processGraph(nodes: GraphNode[]): GraphNode[] {
 	return nodes;
 }
 
+function updateHill({
+	prevNode,
+	prevIndex,
+	nextNode,
+	nextIndex,
+	current,
+	currentIndex,
+	nodes,
+}: {
+	prevNode: GraphNode;
+	prevIndex: number;
+	nextNode: GraphNode;
+	nextIndex: number;
+	current: GraphNode;
+	currentIndex: number;
+	nodes: GraphNode[];
+}): {
+	current: GraphNode;
+	rest: GraphNode[];
+	nodes: GraphNode[];
+	prevNode: GraphNode;
+	nextNode: GraphNode;
+} {
+	const excessiveWaterVolume = current.excessiveWaterVolume;
+
+	[current, prevNode] = flowWater(0.5 * excessiveWaterVolume, current, prevNode);
+	[current, nextNode] = flowWater(0.5 * excessiveWaterVolume, current, nextNode);
+
+	nodes = setAt(prevIndex, prevNode, nodes);
+	nodes = setAt(nextIndex, nextNode, nodes);
+	nodes = setAt(currentIndex, current, nodes);
+	const rest = nodes.slice(currentIndex + 1);
+
+	return { current, rest, nodes, prevNode, nextNode };
+}
+
+function updateSlopeLeft({
+	prevNode,
+	prevIndex,
+	current,
+	currentIndex,
+	nodes,
+}: {
+	prevNode: GraphNode;
+	prevIndex: number;
+	current: GraphNode;
+	currentIndex: number;
+	nodes: GraphNode[];
+}): {
+	current: GraphNode;
+	rest: GraphNode[];
+	nodes: GraphNode[];
+	prevNode: GraphNode;
+} {
+	[current, prevNode] = flowWater(current.excessiveWaterVolume, current, prevNode);
+
+	nodes = setAt(currentIndex, current, nodes);
+	nodes = setAt(prevIndex, prevNode, nodes);
+	const rest = nodes.slice(currentIndex + 1);
+
+	return { current, rest, nodes, prevNode };
+}
+
+function updateSlopeRight({
+	nextNode,
+	nextIndex,
+	current,
+	currentIndex,
+	nodes,
+}: {
+	nextNode: GraphNode;
+	nextIndex: number;
+	current: GraphNode;
+	currentIndex: number;
+	nodes: GraphNode[];
+}): {
+	current: GraphNode;
+	rest: GraphNode[];
+	nodes: GraphNode[];
+	nextNode: GraphNode;
+} {
+	[current, nextNode] = flowWater(current.excessiveWaterVolume, current, nextNode);
+
+	nodes = setAt(currentIndex, current, nodes);
+	nodes = setAt(nextIndex, nextNode, nodes);
+
+	const rest = nodes.slice(currentIndex + 1);
+
+	return { current, rest, nodes, nextNode };
+}
+
+function updatePit({
+	excessiveWaterTotal,
+	current,
+	currentIndex,
+	nodes,
+}: {
+	excessiveWaterTotal: number;
+	current: GraphNode;
+	currentIndex: number;
+	nodes: GraphNode[];
+}): {
+	current: GraphNode;
+	rest: GraphNode[];
+	nodes: GraphNode[];
+	excessiveWaterTotal: number;
+} {
+	const delta = calculateWaterVolumeDelta(current, nodes);
+
+	excessiveWaterTotal -= delta;
+	current = fillPitWithWater(delta, current);
+	nodes = setAt(currentIndex, current, nodes);
+
+	const rest = nodes.slice(currentIndex + 1);
+
+	return { current, rest, nodes, excessiveWaterTotal };
+}
+
+function updateSameLevel({
+	prevNode,
+	prevIndex,
+	nextNode,
+	nextIndex,
+	current,
+	currentIndex,
+	nodes,
+}: {
+	prevNode: GraphNode;
+	prevIndex: number;
+	nextNode: GraphNode;
+	nextIndex: number;
+	current: GraphNode;
+	currentIndex: number;
+	nodes: GraphNode[];
+}): { current: GraphNode; rest: GraphNode[]; nodes: GraphNode[] } {
+	const [neighbor, neighborIndex] =
+		current.level === prevNode.level ? [prevNode, prevIndex] : [nextNode, nextIndex];
+
+	current = mergeNodes(current, neighbor);
+	nodes = setAt(currentIndex, current, nodes);
+	nodes = removeAt(neighborIndex, nodes);
+
+	const rest = nodes.slice(currentIndex + 1);
+
+	return { current, rest, nodes };
+}
+
 function compareByLevel(a: GraphNode, b: GraphNode): number {
 	return b.level - a.level;
 }
 
-function next(node: GraphNode | undefined, nodes: GraphNode[]): GraphNode | undefined {
-	if (!node) {
-		return;
+function next(node: GraphNode | undefined, nodes: GraphNode[]): [GraphNode | undefined, number] {
+	if (!node || node.segmentIndexes.length === 0) {
+		return [undefined, -1];
 	}
 
 	const last = node.segmentIndexes[node.segmentIndexes.length - 1];
-	return nodes.find((node) => node.segmentIndexes.includes(last + 1));
+	const index = nodes.findIndex((node) =>
+		sortedNonEmptyArrayIncludes(last + 1, node.segmentIndexes)
+	);
+	return [nodes[index], index];
 }
 
-function prev(node: GraphNode | undefined, nodes: GraphNode[]): GraphNode | undefined {
-	if (!node) {
-		return;
+function prev(node: GraphNode | undefined, nodes: GraphNode[]): [GraphNode | undefined, number] {
+	if (!node || node.segmentIndexes.length === 0) {
+		return [undefined, -1];
 	}
 
-	const first = node.segmentIndexes[0];
-	return nodes.find((node) => node.segmentIndexes.includes(first - 1));
+	const first = head(node.segmentIndexes)!;
+	const index = nodes.findIndex((node) =>
+		sortedNonEmptyArrayIncludes(first - 1, node.segmentIndexes)
+	);
+
+	return [nodes[index], index];
 }
 
 function depth(node: GraphNode, nodes: GraphNode[]): number {
-	const prevNode = prev(node, nodes);
-	const nextNode = next(node, nodes);
+	const [prevNode] = prev(node, nodes);
+	const [nextNode] = next(node, nodes);
 
 	if (!prevNode || !nextNode) {
 		return 0;
@@ -200,7 +371,7 @@ function mergeSameLevelNeighbors(nodes: GraphNode[]): GraphNode[] {
 	let processed: GraphNode[] = [];
 
 	while (current) {
-		const nextNode = next(current, nodes);
+		const [nextNode] = next(current, nodes);
 
 		if (nextNode && current.level === nextNode.level) {
 			const merged = mergeNodes(current, nextNode);
@@ -222,10 +393,13 @@ function mergeSameLevelNeighbors(nodes: GraphNode[]): GraphNode[] {
 }
 
 function mergeNodes(node: GraphNode, otherNode: GraphNode): GraphNode {
-	const segmentIndexes = node.segmentIndexes.concat(otherNode.segmentIndexes);
+	const segmentIndexes =
+		head(node.segmentIndexes)! < head(otherNode.segmentIndexes)!
+			? node.segmentIndexes.concat(otherNode.segmentIndexes)
+			: otherNode.segmentIndexes.concat(node.segmentIndexes);
 
 	return new GraphNode(
-		[...new Int32Array(segmentIndexes).sort()],
+		segmentIndexes,
 		0,
 		node.excessiveWaterVolume + otherNode.excessiveWaterVolume,
 		node.level
@@ -288,4 +462,8 @@ function setAt<T>(index: number, elem: T, array: T[]): T[] {
 }
 function removeAt<T>(index: number, array: T[]): T[] {
 	return [...array.slice(0, index), ...array.slice(index + 1)];
+}
+
+function sortedNonEmptyArrayIncludes(elem: number, array: number[]): boolean {
+	return elem >= head(array)! && elem < head(array)! + array.length;
 }
