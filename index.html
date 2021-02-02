@@ -1,71 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-	<title>Water Levels</title>
-	<link rel="stylesheet" href="tailwind.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Water Levels</title>
+    <link rel="stylesheet" href="tailwind.css">
 </head>
+
 <body class="bg-white dark:bg-gray-800">
-<div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4">
-	<div class="max-w-md w-full space-y-8">
-		<div>
-			<h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-				Water Levels
-			</h2>
-		</div>
-		<form novalidate class="mt-8 space-y-6 text-gray-600 dark:text-gray-300">
-			<div class="shadow overflow-hidden">
-				<div class="px-4 py-5 bg-white dark:bg-gray-900 border dark:border-gray-600 rounded-md">
-					<div class="grid grid-cols-6 gap-6">
-						<div class="col-span-6">
-							<label for="landscape"
-								   class="block font-medium text-gray-700 dark:text-gray-300 pb-3">
-								Comma Separated Landscape Data
-							</label>
-							<input type="text"
-								   required
-								   name="landscape"
-								   id="landscape"
-								   value="3, 1, 6, 4, 8, 9"
-								   class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-300 rounded-t-md focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 dark:bg-gray-800"
-							>
-						</div>
-						<div class="col-span-6">
-							<label for="hours"
-								   class="block font-medium text-gray-700 dark:text-gray-300 pb-3">Hours</label>
-							<input type="number"
-								   required
-								   step="1"
-								   min="0"
-								   name="hours"
-								   id="hours"
-								   value="1"
-								   class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-300 rounded-t-md focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 dark:bg-gray-800"
-							>
-						</div>
-						<div class="col-span-6">
-							<button type="button"
-									id="random"
-									class="w-full flex justify-center py-2 px-4  bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:hover:border-indigo-400 focus:outline-none">
-								Random
-							</button>
-						</div>
-						<div class="col-span-6">
-							<button type="submit"
-									class="w-full flex justify-center py-2 px-4 border border-transparent font-medium rounded-md text-white bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none">
-								Calculate
-							</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</form>
-	</div>
-	<div class="max-w-md w-full space-y-8 p-10">
-		<pre id="result" class="dark:text-gray-200"></pre>
-	</div>
-</div>
-<script src="main.js"></script>
+    <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4">
+        <div class="max-w-md w-full space-y-8">
+            <div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+                    Water Levels
+                </h2>
+            </div>
+            <form novalidate class="mt-8 space-y-6 text-gray-600 dark:text-gray-300">
+                <div class="shadow overflow-hidden">
+                    <div class="px-4 py-5 bg-white dark:bg-gray-900 border dark:border-gray-600 rounded-md">
+                        <div class="grid grid-cols-6 gap-6">
+                            <div class="col-span-6">
+                                <label for="landscape" class="block font-medium text-gray-700 dark:text-gray-300 pb-3">
+                                    Landscape
+                                </label>
+                                <input type="text" required name="landscape" id="landscape" value="3, 1, 6, 4, 8, 9"
+                                    class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-300 rounded-t-md focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 dark:bg-gray-800">
+                            </div>
+                            <div class="col-span-6">
+                                <label for="hours"
+                                    class="block font-medium text-gray-700 dark:text-gray-300 pb-3">Hours</label>
+                                <input type="number" required step="1" min="0" name="hours" id="hours" value="1"
+                                    class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-300 rounded-t-md focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-indigo-500 dark:focus:border-indigo-400 dark:bg-gray-800">
+                            </div>
+                            <div class="col-span-6">
+                                <button type="button" id="random"
+                                    class="w-full flex justify-center py-2 px-4  bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 dark:hover:border-indigo-400 focus:outline-none">
+                                    Random
+                                </button>
+                            </div>
+                            <div class="col-span-6">
+                                <button type="submit"
+                                    class="w-full flex justify-center py-2 px-4 border border-transparent font-medium rounded-md text-white bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 focus:outline-none">
+                                    Calculate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="max-w-md w-full space-y-8 p-10">
+            <pre id="result" class="dark:text-gray-200"></pre>
+        </div>
+    </div>
+    <script src="main.js"></script>
 </body>
+
 </html>
