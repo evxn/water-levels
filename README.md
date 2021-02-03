@@ -84,7 +84,7 @@ Graph node contains some information:
 segments    # set of links to segments it constitutes of
 waterVolume # amount of non-transferrable water it holds
 excessiveWaterVolume # amount of transferrable water it holds
-baseLevel   # base height for calculating water level above
+baseLevel   # base height for calculating water level above it
 ```
 
 And from these we can calculate some additional values:
