@@ -5,7 +5,7 @@
 Conditions on landscape heights are relaxed. Negative, floating-point numbers and zero are also 
 valid heights.
 
-No formal verification. Very scarce description of the algorithm.
+No formal verification. Scarce description of the algorithm.
 
 ## Assignment
 
@@ -70,6 +70,11 @@ In one hour a landscape in the first row will turn into new one in the second ro
 ```
 8, 1, 8, 8, 1
 8, 4, 8, 8, 3
+```
+
+```
+1, 8, 9, 8 <- got this one during the sleep and found a critical bug in the algorithm
+4, 8, 9, 9 
 ```
 
 ## Algorithm High-Level Description

@@ -22,7 +22,7 @@ class GraphNode {
 (function main() {
 	if (typeof window === 'undefined') {
 		// we're in NodeJs
-		console.log(calculateWaterLevels(1, [3, 1, 6, 4, 8, 9]));
+		console.log(calculateWaterLevels(1, [1, 8, 9, 8]));
 		return;
 	}
 	// browser code
@@ -399,11 +399,16 @@ function updateSameLevel({
 	const [neighbor, neighborIndex] =
 		current.level === prevNode.level ? [prevNode, prevIndex] : [nextNode, nextIndex];
 
-	current = mergeNodes(current, neighbor);
-	nodes = setAt(currentIndex, current, nodes);
-	nodes = removeAt(neighborIndex, nodes);
+	const [mergeIndex, discardIndex] =
+		currentIndex > neighborIndex
+			? [neighborIndex, currentIndex]
+			: [currentIndex, neighborIndex];
 
-	const rest = nodes.slice(currentIndex + 1);
+	current = mergeNodes(current, neighbor);
+	nodes = setAt(mergeIndex, current, nodes);
+	nodes = removeAt(discardIndex, nodes);
+
+	const rest = nodes.slice(mergeIndex);
 
 	return { current, rest, nodes };
 }
