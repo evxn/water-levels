@@ -98,7 +98,7 @@ Bounding nodes have waterVolume = 0, excessiveWaterVolume = -∞, and baseLevel 
 
 So how all of this solves the original problem?
 
-Basically it’s all about transferring excessive water from node to node to from the higher to the lower regions until it can’t go further. And then fill up those pits with the transferred water, raising their water level until it reaches the level of their neighbors. Then detecting this newly appeared same-level neighbors and greedily merge them together. And then go on from the bottom to the top until all the excessive water ends up in some reservoir.
+Basically it’s all about transferring excessive water from node to node, from the higher to the lower regions until it can’t go further. And then fill up those pits with the transferred water, raising their water level until it reaches the level of their neighbors. Then detecting this newly appeared same-level neighbors and greedily merge them together. And then go on from the bottom to the top until all the excessive water ends up in some reservoir.
 
 ## Complexity Analysis
 
