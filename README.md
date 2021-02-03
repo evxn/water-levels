@@ -102,7 +102,7 @@ Basically it’s all about transferring excessive water from node to node, from 
 
 ## Complexity Analysis
 
-Algorithm requires initial sorting of landscape data `O(nlogn)`. And initial merging of the joint same-level neighbors `O(n)`. Further processing is 2-passes down and up the graph spine `O(n)`. This is assuming having a reverse lookup table from segments to graph nodes. And a constant time search inside the graph.
+Algorithm requires initial sorting of landscape data `O(nlogn)`. And initial merging of the joint same-level neighbors `O(n)`. Further processing is 2-passes down and up the graph spine `O(n)`. This is assuming having a reverse lookup table from segments to graph nodes. And a constant time search inside the graph. So, theoretically, we could end up at  `O(nlogn)`.
 
 Unfortunately, implementation has its shortcomings. Some of them were made for the sake of simplicity. But many of them arise off the desire for using only immutable data structures. This means no mutation by reference is possible. Graph is implemented as a JavaScript array, and no lookup tables implemented, meaning `O(n)` worst-case search (for `n` smaller then some number array works like a hash-map) and this could potentially result in `O(n^2)` behavior of the algorithm. Though I reduces the usage of `indexOf` to 3 times, all of which can be more or less easily eliminated. `findIndex` is used 2 times for getting next and previous neighbors and removing them would require having the aforementioned reverse lookup table.
 
