@@ -22,7 +22,7 @@ class GraphNode {
 (function main() {
 	if (typeof window === 'undefined') {
 		// we're in NodeJs
-		console.log(calculateWaterLevels(1, [1, 8, 9, 8]));
+		console.log(calculateWaterLevels(4, [3, 1, 6, 4, 8, 9, 4, 4]));
 		return;
 	}
 	// browser code
@@ -147,116 +147,82 @@ function processGraph(nodes: GraphNode[]): GraphNode[] {
 		.filter(({ excessiveWaterVolume }) => isFinite(excessiveWaterVolume))
 		.reduce((sum, { excessiveWaterVolume }) => sum + excessiveWaterVolume, 0);
 
-	// pass from top to bottom
-	let current = head(nodes);
-	let rest = tail(nodes) ?? [];
-	while (current && excessiveWaterTotal > 0) {
-		let [prevNode, prevIndex] = prev(current, nodes);
-		let [nextNode, nextIndex] = next(current, nodes);
+	let reverseMode = false;
+	while (excessiveWaterTotal > 0) {
+		let current = head(nodes);
+		let rest = tail(nodes) ?? [];
+		while (current && excessiveWaterTotal > 0) {
+			let [prevNode, prevIndex] = prev(current, nodes);
+			let [nextNode, nextIndex] = next(current, nodes);
 
-		if (prevNode && nextNode) {
-			const currentIndex = nodes.indexOf(current);
+			if (prevNode && nextNode) {
+				const currentIndex = nodes.indexOf(current);
 
-			if (current.level > prevNode.level && current.level > nextNode.level) {
-				/* case hill */
-				({ current, rest, nodes, prevNode, nextNode } = updateHill({
-					prevNode,
-					prevIndex,
-					nextNode,
-					nextIndex,
-					current,
-					currentIndex,
-					nodes,
-				}));
-			} else if (current.level > prevNode.level) {
-				/* case slope left */
-				({ current, rest, nodes, prevNode } = updateSlopeLeft({
-					prevNode,
-					prevIndex,
-					current,
-					currentIndex,
-					nodes,
-				}));
-			} else if (current.level > nextNode.level) {
-				/* case slope right */
-				({ current, rest, nodes, nextNode } = updateSlopeRight({
-					nextNode,
-					nextIndex,
-					current,
-					currentIndex,
-					nodes,
-				}));
-			} else if (current.level < prevNode.level && current.level < nextNode.level) {
-				/* case pit */
-				({ current, rest, nodes, excessiveWaterTotal } = updatePit({
-					excessiveWaterTotal,
-					current,
-					currentIndex,
-					nodes,
-				}));
+				if (current.excessiveWaterVolume > 0) {
+					if (current.level > prevNode.level && current.level > nextNode.level) {
+						/* case hill */
+						({ current, rest, nodes, prevNode, nextNode } = updateHill({
+							prevNode,
+							prevIndex,
+							nextNode,
+							nextIndex,
+							current,
+							currentIndex,
+							nodes,
+						}));
+					} else if (current.level > prevNode.level) {
+						/* case slope left */
+						({ current, rest, nodes, prevNode } = updateSlopeLeft({
+							prevNode,
+							prevIndex,
+							current,
+							currentIndex,
+							nodes,
+						}));
+					} else if (current.level > nextNode.level) {
+						/* case slope right */
+						({ current, rest, nodes, nextNode } = updateSlopeRight({
+							nextNode,
+							nextIndex,
+							current,
+							currentIndex,
+							nodes,
+						}));
+					} else if (current.level < prevNode.level && current.level < nextNode.level) {
+						/* case pit */
+						({ current, rest, nodes, excessiveWaterTotal } = updatePit({
+							excessiveWaterTotal,
+							current,
+							currentIndex,
+							nodes,
+						}));
+					}
+				}
+
+				if (current.level === prevNode.level || current.level === nextNode.level) {
+					/* case same level */
+					({ current, rest, nodes } = updateSameLevel({
+						reverseMode,
+						prevNode,
+						prevIndex,
+						nextNode,
+						nextIndex,
+						current,
+						currentIndex,
+						nodes,
+					}));
+
+					continue; // try to greedy merge more neighbors
+				}
 			}
 
-			if (current.level === prevNode.level || current.level === nextNode.level) {
-				/* case same level */
-				({ current, rest, nodes } = updateSameLevel({
-					prevNode,
-					prevIndex,
-					nextNode,
-					nextIndex,
-					current,
-					currentIndex,
-					nodes,
-				}));
-
-				continue; // try to greedy merge more neighbors
-			}
+			current = head(rest);
+			rest = tail(rest) ?? [];
 		}
 
-		current = head(rest);
-		rest = tail(rest) ?? [];
+		reverseMode = !reverseMode;
+		nodes = reverse(nodes);
 	}
-
-	// pass from bottom to top
-	nodes = reverse(nodes);
-	current = head(nodes);
-	rest = tail(nodes) ?? [];
-	while (current && excessiveWaterTotal > 0) {
-		const [prevNode, prevIndex] = prev(current, nodes);
-		const [nextNode, nextIndex] = next(current, nodes);
-
-		if (prevNode && nextNode) {
-			const currentIndex = nodes.indexOf(current);
-
-			if (current.level < prevNode.level && current.level < nextNode.level) {
-				/* case pit */
-				({ current, rest, nodes, excessiveWaterTotal } = updatePit({
-					excessiveWaterTotal,
-					current,
-					currentIndex,
-					nodes,
-				}));
-			}
-
-			if (current.level === prevNode.level || current.level === nextNode.level) {
-				/* case same level */
-				({ current, rest, nodes } = updateSameLevel({
-					prevNode,
-					prevIndex,
-					nextNode,
-					nextIndex,
-					current,
-					currentIndex,
-					nodes,
-				}));
-
-				continue; // try to greedy merge more neighbors
-			}
-		}
-
-		current = head(rest);
-		rest = tail(rest) ?? [];
-	}
-	nodes = reverse(nodes);
 
 	return nodes;
 }
@@ -319,6 +285,7 @@ function updateSlopeLeft({
 
 	nodes = setAt(currentIndex, current, nodes);
 	nodes = setAt(prevIndex, prevNode, nodes);
+
 	const rest = nodes.slice(currentIndex + 1);
 
 	return { current, rest, nodes, prevNode };
@@ -380,6 +347,7 @@ function updatePit({
 }
 
 function updateSameLevel({
+	reverseMode,
 	prevNode,
 	prevIndex,
 	nextNode,
@@ -388,6 +356,7 @@ function updateSameLevel({
 	currentIndex,
 	nodes,
 }: {
+	reverseMode: boolean;
 	prevNode: GraphNode;
 	prevIndex: number;
 	nextNode: GraphNode;
@@ -400,7 +369,7 @@ function updateSameLevel({
 		current.level === prevNode.level ? [prevNode, prevIndex] : [nextNode, nextIndex];
 
 	const [mergeIndex, discardIndex] =
-		currentIndex > neighborIndex
+		currentIndex > neighborIndex && !reverseMode
 			? [neighborIndex, currentIndex]
 			: [currentIndex, neighborIndex];
 
