@@ -5,6 +5,8 @@
 Conditions on landscape heights are relaxed. Negative, floating-point numbers and zero are also 
 valid heights.
 
+No formal verification. Very scarce description of the algorithm.
+
 ## Assignment
 
 Write a program in Rust or TypeScript that calculates the water level in different parts of a landscape.
