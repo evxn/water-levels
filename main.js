@@ -19,7 +19,7 @@ class GraphNode {
 (function main() {
     if (typeof window === 'undefined') {
         // we're in NodeJs
-        console.log(calculateWaterLevels(1, [1, 8, 9, 8]));
+        console.log(calculateWaterLevels(4, [3, 1, 6, 4, 8, 9, 4, 4]));
         return;
     }
     // browser code
@@ -105,112 +105,83 @@ function createGraph(hours, landscape) {
         .concat([leftWall, rightWall]);
 }
 function processGraph(nodes) {
-    var _a, _b, _c, _d;
+    var _a, _b;
     let excessiveWaterTotal = nodes
         .filter(({ excessiveWaterVolume }) => isFinite(excessiveWaterVolume))
         .reduce((sum, { excessiveWaterVolume }) => sum + excessiveWaterVolume, 0);
-    // pass from top to bottom
-    let current = head(nodes);
-    let rest = (_a = tail(nodes)) !== null && _a !== void 0 ? _a : [];
-    while (current && excessiveWaterTotal > 0) {
-        let [prevNode, prevIndex] = prev(current, nodes);
-        let [nextNode, nextIndex] = next(current, nodes);
-        if (prevNode && nextNode) {
-            const currentIndex = nodes.indexOf(current);
-            if (current.level > prevNode.level && current.level > nextNode.level) {
-                /* case hill */
-                ({ current, rest, nodes, prevNode, nextNode } = updateHill({
-                    prevNode,
-                    prevIndex,
-                    nextNode,
-                    nextIndex,
-                    current,
-                    currentIndex,
-                    nodes,
-                }));
+    let reverseMode = false;
+    while (excessiveWaterTotal > 0) {
+        let current = head(nodes);
+        let rest = (_a = tail(nodes)) !== null && _a !== void 0 ? _a : [];
+        while (current && excessiveWaterTotal > 0) {
+            let [prevNode, prevIndex] = prev(current, nodes);
+            let [nextNode, nextIndex] = next(current, nodes);
+            if (prevNode && nextNode) {
+                const currentIndex = nodes.indexOf(current);
+                if (current.excessiveWaterVolume > 0) {
+                    if (current.level > prevNode.level && current.level > nextNode.level) {
+                        /* case hill */
+                        ({ current, rest, nodes, prevNode, nextNode } = updateHill({
+                            prevNode,
+                            prevIndex,
+                            nextNode,
+                            nextIndex,
+                            current,
+                            currentIndex,
+                            nodes,
+                        }));
+                    }
+                    else if (current.level > prevNode.level) {
+                        /* case slope left */
+                        ({ current, rest, nodes, prevNode } = updateSlopeLeft({
+                            prevNode,
+                            prevIndex,
+                            current,
+                            currentIndex,
+                            nodes,
+                        }));
+                    }
+                    else if (current.level > nextNode.level) {
+                        /* case slope right */
+                        ({ current, rest, nodes, nextNode } = updateSlopeRight({
+                            nextNode,
+                            nextIndex,
+                            current,
+                            currentIndex,
+                            nodes,
+                        }));
+                    }
+                    else if (current.level < prevNode.level && current.level < nextNode.level) {
+                        /* case pit */
+                        ({ current, rest, nodes, excessiveWaterTotal } = updatePit({
+                            excessiveWaterTotal,
+                            current,
+                            currentIndex,
+                            nodes,
+                        }));
+                    }
+                }
+                if (current.level === prevNode.level || current.level === nextNode.level) {
+                    /* case same level */
+                    ({ current, rest, nodes } = updateSameLevel({
+                        reverseMode,
+                        prevNode,
+                        prevIndex,
+                        nextNode,
+                        nextIndex,
+                        current,
+                        currentIndex,
+                        nodes,
+                    }));
+                    continue; // try to greedy merge more neighbors
+                }
             }
-            else if (current.level > prevNode.level) {
-                /* case slope left */
-                ({ current, rest, nodes, prevNode } = updateSlopeLeft({
-                    prevNode,
-                    prevIndex,
-                    current,
-                    currentIndex,
-                    nodes,
-                }));
-            }
-            else if (current.level > nextNode.level) {
-                /* case slope right */
-                ({ current, rest, nodes, nextNode } = updateSlopeRight({
-                    nextNode,
-                    nextIndex,
-                    current,
-                    currentIndex,
-                    nodes,
-                }));
-            }
-            else if (current.level < prevNode.level && current.level < nextNode.level) {
-                /* case pit */
-                ({ current, rest, nodes, excessiveWaterTotal } = updatePit({
-                    excessiveWaterTotal,
-                    current,
-                    currentIndex,
-                    nodes,
-                }));
-            }
-            if (current.level === prevNode.level || current.level === nextNode.level) {
-                /* case same level */
-                ({ current, rest, nodes } = updateSameLevel({
-                    prevNode,
-                    prevIndex,
-                    nextNode,
-                    nextIndex,
-                    current,
-                    currentIndex,
-                    nodes,
-                }));
-                continue; // try to greedy merge more neighbors
-            }
+            current = head(rest);
+            rest = (_b = tail(rest)) !== null && _b !== void 0 ? _b : [];
         }
-        current = head(rest);
-        rest = (_b = tail(rest)) !== null && _b !== void 0 ? _b : [];
+        reverseMode = !reverseMode;
+        nodes = reverse(nodes);
     }
-    // pass from bottom to top
-    nodes = reverse(nodes);
-    current = head(nodes);
-    rest = (_c = tail(nodes)) !== null && _c !== void 0 ? _c : [];
-    while (current && excessiveWaterTotal > 0) {
-        const [prevNode, prevIndex] = prev(current, nodes);
-        const [nextNode, nextIndex] = next(current, nodes);
-        if (prevNode && nextNode) {
-            const currentIndex = nodes.indexOf(current);
-            if (current.level < prevNode.level && current.level < nextNode.level) {
-                /* case pit */
-                ({ current, rest, nodes, excessiveWaterTotal } = updatePit({
-                    excessiveWaterTotal,
-                    current,
-                    currentIndex,
-                    nodes,
-                }));
-            }
-            if (current.level === prevNode.level || current.level === nextNode.level) {
-                /* case same level */
-                ({ current, rest, nodes } = updateSameLevel({
-                    prevNode,
-                    prevIndex,
-                    nextNode,
-                    nextIndex,
-                    current,
-                    currentIndex,
-                    nodes,
-                }));
-                continue; // try to greedy merge more neighbors
-            }
-        }
-        current = head(rest);
-        rest = (_d = tail(rest)) !== null && _d !== void 0 ? _d : [];
-    }
-    nodes = reverse(nodes);
     return nodes;
 }
 function updateHill({ prevNode, prevIndex, nextNode, nextIndex, current, currentIndex, nodes, }) {
@@ -245,9 +216,9 @@ function updatePit({ excessiveWaterTotal, current, currentIndex, nodes, }) {
     const rest = nodes.slice(currentIndex + 1);
     return { current, rest, nodes, excessiveWaterTotal };
 }
-function updateSameLevel({ prevNode, prevIndex, nextNode, nextIndex, current, currentIndex, nodes, }) {
+function updateSameLevel({ reverseMode, prevNode, prevIndex, nextNode, nextIndex, current, currentIndex, nodes, }) {
     const [neighbor, neighborIndex] = current.level === prevNode.level ? [prevNode, prevIndex] : [nextNode, nextIndex];
-    const [mergeIndex, discardIndex] = currentIndex > neighborIndex
+    const [mergeIndex, discardIndex] = currentIndex > neighborIndex && !reverseMode
         ? [neighborIndex, currentIndex]
         : [currentIndex, neighborIndex];
     current = mergeNodes(current, neighbor);
