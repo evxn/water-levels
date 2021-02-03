@@ -70,7 +70,7 @@ In one hour a landscape in the first row will turn into new one in the second ro
 8, 4, 8, 8, 3
 ```
 
-## Algorithm High-level Description
+## Algorithm High-Level Description
 
 Computation state is represented in terms of a graph. Nodes of this graph are joined flat parts of the landscape. We’ll call them _inner nodes_. There’re also two additional _bounding_ nodes that represent “infinite walls”.
 
