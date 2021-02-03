@@ -91,7 +91,7 @@ And from these we can calculate some additional values:
 
 ```
 width   # cardinality of segments set
-level   # current height of the node (water and ground)
+level   # current height of the node (base + water above the base level)
 ```
 
 Bounding nodes have waterVolume = 0, excessiveWaterVolume = -∞, and baseLevel = ∞.
