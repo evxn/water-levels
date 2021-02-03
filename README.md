@@ -76,7 +76,7 @@ Computation state is represented in terms of a graph. Nodes of this graph are jo
 
 Nodes are interconnected with two types of edges. First type defines the order of computation. You can think of it like a spine of the graph. It’s a linked list that connects inner nodes in the orderly fashion — from the highest to the lowest. Traversing it in this particular order will help maintain correctness of the algorithm.
 
-Second type of edges connects a node to its directly adjacent landscape neighbors (previous and next). Each inner node has links to exactly 2 neighbors. Bounding nodes have only one edge each, possibly linked to a single node.
+Second type of edges connects a node to its directly adjacent landscape neighbors (previous and next). Each inner node has links to exactly 2 neighbors. Bounding nodes have only one edge each, possibly linking to a single node.
 
 Graph node contains some information:
 
