@@ -118,6 +118,20 @@ function processGraph(nodes) {
             let [nextNode, nextIndex] = next(current, nodes);
             if (prevNode && nextNode) {
                 const currentIndex = nodes.indexOf(current);
+                if (current.level === prevNode.level || current.level === nextNode.level) {
+                    /* case same level */
+                    ({ current, rest, nodes } = updateSameLevel({
+                        reverseMode,
+                        prevNode,
+                        prevIndex,
+                        nextNode,
+                        nextIndex,
+                        current,
+                        currentIndex,
+                        nodes,
+                    }));
+                    continue; // try to greedy merge more neighbors
+                }
                 if (current.excessiveWaterVolume > 0) {
                     if (current.level > prevNode.level && current.level > nextNode.level) {
                         /* case hill */
@@ -160,20 +174,6 @@ function processGraph(nodes) {
                             nodes,
                         }));
                     }
-                }
-                if (current.level === prevNode.level || current.level === nextNode.level) {
-                    /* case same level */
-                    ({ current, rest, nodes } = updateSameLevel({
-                        reverseMode,
-                        prevNode,
-                        prevIndex,
-                        nextNode,
-                        nextIndex,
-                        current,
-                        currentIndex,
-                        nodes,
-                    }));
-                    continue; // try to greedy merge more neighbors
                 }
             }
             current = head(rest);
