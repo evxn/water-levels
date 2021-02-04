@@ -19,7 +19,7 @@ class GraphNode {
 (function main() {
     if (typeof window === 'undefined') {
         // we're in NodeJs
-        console.log(calculateWaterLevels(4, [3, 1, 6, 4, 8, 9, 4, 4]));
+        console.log(calculateWaterLevels(1, [7, 8, 8, 4]));
         return;
     }
     // browser code
@@ -230,19 +230,19 @@ function updateSameLevel({ reverseMode, prevNode, prevIndex, nextNode, nextIndex
 function compareByLevel(a, b) {
     return b.level - a.level;
 }
-function next(node, nodes) {
-    if (!node || node.segmentIndexes.length === 0) {
+function next(curr, nodes) {
+    if (!curr || curr.segmentIndexes.length === 0) {
         return [undefined, -1];
     }
-    const last = node.segmentIndexes[node.segmentIndexes.length - 1];
+    const last = curr.segmentIndexes[curr.segmentIndexes.length - 1];
     const index = nodes.findIndex((node) => sortedNonEmptyArrayIncludes(last + 1, node.segmentIndexes));
     return [nodes[index], index];
 }
-function prev(node, nodes) {
-    if (!node || node.segmentIndexes.length === 0) {
+function prev(curr, nodes) {
+    if (!curr || curr.segmentIndexes.length === 0) {
         return [undefined, -1];
     }
-    const first = head(node.segmentIndexes);
+    const first = head(curr.segmentIndexes);
     const index = nodes.findIndex((node) => sortedNonEmptyArrayIncludes(first - 1, node.segmentIndexes));
     return [nodes[index], index];
 }
@@ -253,7 +253,7 @@ function depth(node, nodes) {
         return 0;
     }
     return node.level < prevNode.level && node.level < nextNode.level
-        ? Math.min(prevNode.level, nextNode.level) - node.level
+        ? Math.min(prevNode.level, nextNode.level) - node.baseLevel
         : 0;
 }
 function mergeSameLevelNeighbors(nodes) {
