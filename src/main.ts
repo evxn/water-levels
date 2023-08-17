@@ -29,17 +29,17 @@ class GraphNode {
 	window.onload = () => {
 		const form = window.document.querySelector('form');
 		if (!form) {
-			throw new Error('Cannot the form element on the page');
+			throw new Error('Cannot find the form element on the page');
 		}
 
 		const result = window.document.querySelector('#result');
 		if (!result) {
-			throw new Error('Cannot the #result element on the page');
+			throw new Error('Cannot find the #result element on the page');
 		}
 
 		const random = window.document.querySelector('#random') as HTMLButtonElement | null;
 		if (!random) {
-			throw new Error('Cannot the #random button');
+			throw new Error('Cannot find the #random button');
 		}
 
 		form.onsubmit = (event) => submitHandler(event, form, result);
@@ -50,7 +50,7 @@ class GraphNode {
 function randomClickHandler(form: HTMLFormElement, result: Element) {
 	const input = form.querySelector('#landscape') as HTMLInputElement | null;
 	if (!input) {
-		throw new Error('Cannot the #landscape input');
+		throw new Error('Cannot find the #landscape input');
 	}
 
 	const length = randomIntFromInterval(4, 8);
