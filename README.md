@@ -2,13 +2,6 @@
 
 Deployed to https://evgn.ml/water-levels/
 
-## Differences From The Original Task
-
-Conditions on landscape heights are relaxed. Negative, floating-point numbers and zero are also 
-valid heights.
-
-No formal verification. Scarce description of the algorithm.
-
 ## Assignment
 
 Write a program in Rust or TypeScript that calculates the water level in different parts of a landscape.
@@ -44,6 +37,11 @@ The user of the program shall be able to define the landscape when running the p
 Describe an algorithm and its asymptotic computational complexity. The implementation should be done in Rust or TypeScript.
 
 Please deploy the web application to a web-server and provide us a URL, so that we can test it. Furthermore, please attach us a link to the repository (i.e. GitHub, GitLab).
+
+## Differences From The Original Task
+
+Conditions on landscape heights are relaxed. Negative, floating-point numbers and zero are also 
+valid heights.
 
 ## Test Samples
 
