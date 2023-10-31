@@ -41,7 +41,7 @@ Please deploy the web application to a web-server and provide us a URL, so that 
 ## Differences From The Original Task
 
 Conditions on landscape heights are relaxed. Negative, floating-point numbers and zero are also 
-valid heights.
+valid heights. Everything is immutable by default.
 
 ## Test Samples
 
@@ -111,6 +111,6 @@ Basically it’s all about transferring excessive water from node to node, from 
 
 Algorithm requires initial sorting of landscape data `O(nlogn)`. And initial merging of the joint same-level neighbors `O(n)`. ~~Further processing is 2-passes down and up the graph spine`O(n)`.~~ (No longer true. Now it's back and forth, until all the water is settled. The total amount of excessive water can only decrease, and it decreases with each pass, because going up the graph requires to fill up pits. Going down on the other hand results in transferring the water to the pits.) This is assuming having a reverse lookup table from segments to graph nodes. And a constant time search inside the graph. So, theoretically, we could end up at  `O(nlogn)`.
 
-Unfortunately, implementation has its shortcomings. Some of them were made for the sake of simplicity. But many of them arise off the desire for using only immutable data structures. This means no mutation by reference is possible. Graph is implemented as a JavaScript array, and no lookup tables implemented, meaning `O(n)` worst-case search (for `n` smaller then some number array works like a hash-map) and this could potentially result in `O(n^2)` behavior of the algorithm. Though I reduces the usage of `indexOf` to 3 times, all of which can be more or less easily eliminated. `findIndex` is used 2 times for getting next and previous neighbors and removing them would require having the aforementioned reverse lookup table.
+Unfortunately, implementation has its shortcomings. Some of them were made for the sake of simplicity. But many of them arise of the desire for using only immutable data structures. This means no mutation by reference is possible. Graph is implemented as a JavaScript array, and no lookup tables implemented, meaning `O(n)` worst-case search (for `n` smaller then some number array works like a hash-map) and this could potentially result in `O(n^2)` behavior of the algorithm. Though I reduces the usage of `indexOf` to 3 times, all of which can be more or less easily eliminated. `findIndex` is used 2 times for getting next and previous neighbors and removing them would require having the aforementioned reverse lookup table.
 
 Testing on both worst-case and randomly generated data, nevertheless, showed very good results. Testing worst case path for landscapes of length 1k-100k showed that doubling sample size results in 4x increase in execution time. This means linear performance for this scale. As for randomly-generated data performance is even better. I guess, it’s because during the computation, graph quickly shrinks down due to the merging of newly appeared same-level neighbors together which helps mitigate some of the `O(n^2)` effects.
