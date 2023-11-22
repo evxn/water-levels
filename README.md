@@ -34,7 +34,7 @@ The program shall calculate the water levels for each segment after x number of 
 
 The user of the program shall be able to define the landscape when running the program and shall also be able to define the number of hours it will rain.
 
-Describe an algorithm and its asymptotic computational complexity. The implementation should be done in Rust or TypeScript.
+Describe an algorithm and its asymptotic computational complexity. The implementation should be done in pure Rust or pure TypeScript. 
 
 Please deploy the web application to a web-server and provide us a URL, so that we can test it. Furthermore, please attach us a link to the repository (i.e. GitHub, GitLab).
 
